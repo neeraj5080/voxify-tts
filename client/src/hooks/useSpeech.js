@@ -1,6 +1,9 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+// Use backend URL - in production on Vercel, use the Render backend
+const API_URL = import.meta.env.VITE_API_URL || 'https://voxify-backend-5ayx.onrender.com';
+
+console.log('[TTS] Using API_URL:', API_URL);
 
 // Split text into word/whitespace tokens
 function tokenize(text) {

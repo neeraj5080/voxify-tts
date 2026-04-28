@@ -2,7 +2,8 @@ import { useState, useRef } from 'react';
 import { Upload, FileText, X } from 'lucide-react';
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+// Use backend URL - in production on Vercel, use the Render backend
+const API_URL = import.meta.env.VITE_API_URL || 'https://voxify-backend-5ayx.onrender.com';
 
 export default function FileUpload({ onTextLoaded }) {
   const [dragging, setDragging] = useState(false);
