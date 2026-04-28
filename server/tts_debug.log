@@ -1,0 +1,4 @@
+[TTS] Generation started. voice: hi-IN-SwaraNeural
+[TTS] Methods: constructor, _log, _initClient, _send, _pushAudioData, _pushMetadata, _SSMLTemplate, getVoices, setMetadata, _metadataCheck, close, toFile, toStream, rawToFile, rawToStream, _hasMetadataBoundaries, _rawSSMLRequestToFile, _rawSSMLRequest
+[TTS] toStream type: function
+[TTS] Selected method: toStream
