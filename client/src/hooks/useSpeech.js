@@ -199,6 +199,12 @@ export function useSpeech() {
     };
     utter.onend = () => {
       clearInterval(fakeInterval);
+      // Ensure all words in this chunk are highlighted on end
+      const charInFull = chunkCharStart + chunk.length;
+      currentCharIndexRef.current = charInFull;
+      const wordIdx = charToWordIndex(charInFull);
+      setActiveWordIdx(wordIdx);
+
       chunkIndexRef.current = chunkIdx + 1;
       if (statusRef.current === 'playing') speakChunkRef.current(chunkIdx + 1);
     };
@@ -237,10 +243,10 @@ export function useSpeech() {
         audio.volume = s.volume;
         audio.onplay = () => { lastBoundaryRef.current = Date.now(); };
         audio.ontimeupdate = () => {
-          if (!audio.duration) return;
-          const progressVal = audio.currentTime / audio.duration;
-          const estimatedChar = Math.floor(chunkTextStr.length * progressVal);
-          const charInFull = chunkCharStart + estimatedChar;
+          if (!audio.duration || !isFinite(audio.duration)) return;
+          const progressVal = Math.min(1, audio.currentTime / audio.duration);
+          const estimatedChar = Math.round(chunkTextStr.length * progressVal);
+          const charInFull = Math.min(chunkCharStart + estimatedChar, chunkCharStart + chunkTextStr.length);
           currentCharIndexRef.current = charInFull;
           const wordIdx = charToWordIndex(charInFull);
           setActiveWordIdx(wordIdx);
@@ -250,6 +256,13 @@ export function useSpeech() {
           setProgress(Math.min(100, Math.round((spokenWords / Math.max(totalWords, 1)) * 100)));
         };
         audio.onended = () => {
+          // Ensure all words in this chunk are highlighted on end
+          const charInFull = chunkCharStart + chunkTextStr.length;
+          currentCharIndexRef.current = charInFull;
+          const wordIdx = charToWordIndex(charInFull);
+          setActiveWordIdx(wordIdx);
+          activeWordIdxRef.current = wordIdx;
+
           chunkIndexRef.current = idx + 1;
           if (statusRef.current === 'playing') speakChunkRef.current(idx + 1);
         };

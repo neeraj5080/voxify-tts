@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Volume2, History, Settings, ChevronRight, AlignLeft } from 'lucide-react';
 
 import { useSpeech } from './hooks/useSpeech';
@@ -32,6 +32,9 @@ export default function App() {
   const [wordCount, setWordCount] = useState(0);
   const [charCount, setCharCount] = useState(0);
 
+  // Track if user manually changed the voice (prevents auto-detection override)
+  const userManualVoiceChangeRef = useRef(false);
+
   // Persist text to local storage
   useEffect(() => {
     localStorage.setItem('voxify_text', text);
@@ -53,9 +56,12 @@ export default function App() {
     setCharCount(text.length);
   }, [text]);
 
-  // Auto-detect language and update voice
+  // Auto-detect language and update voice (only when text changes, respects manual selection)
   useEffect(() => {
     if (!text.trim() || voices.length === 0) return;
+
+    // Reset manual voice change flag when text changes
+    userManualVoiceChangeRef.current = false;
 
     const VOICE_MAP = {
       "Hindi (Google)": "browser",
@@ -76,7 +82,7 @@ export default function App() {
         console.log(`[Language Detection] Changed voice to: ${newVoiceName} (${detectedLang})`);
       }
     }
-  }, [text, voices, settings.voiceURI, updateSettings]);
+  }, [text, voices]); // Only depend on text and voices, NOT on settings.voiceURI
 
   // Handle keyboard play request from useSpeech
   useEffect(() => {
