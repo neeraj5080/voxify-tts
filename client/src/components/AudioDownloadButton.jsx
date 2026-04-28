@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { Headphones, Loader2 } from 'lucide-react';
 
+const API_URL = import.meta.env.VITE_API_URL || 'https://voxify-backend-5ayx.onrender.com';
+
 export default function AudioDownloadButton({ text, settings, voices, disabled }) {
   const [loading, setLoading] = useState(false);
 
@@ -18,12 +20,12 @@ export default function AudioDownloadButton({ text, settings, voices, disabled }
 
     try {
       setLoading(true);
-      const response = await fetch('/api/tts', {
+      const response = await fetch(`${API_URL}/api/tts`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          text: text.trim(), 
-          voice: settings.voiceURI 
+        body: JSON.stringify({
+          text: text.trim(),
+          voice: settings.voiceURI
         })
       });
 

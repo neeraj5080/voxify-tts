@@ -4,6 +4,7 @@ import { Volume2, History, Settings, ChevronRight, AlignLeft } from 'lucide-reac
 import { useSpeech } from './hooks/useSpeech';
 import { useHistory } from './hooks/useHistory';
 import { useTheme } from './hooks/useTheme';
+import { detectLanguage, getVoiceForLanguage } from './utils/languageDetector';
 
 import TextEditor from './components/TextEditor';
 import Controls from './components/Controls';
@@ -51,6 +52,31 @@ export default function App() {
     setWordCount(text.trim() ? words.length : 0);
     setCharCount(text.length);
   }, [text]);
+
+  // Auto-detect language and update voice
+  useEffect(() => {
+    if (!text.trim() || voices.length === 0) return;
+
+    const VOICE_MAP = {
+      "Hindi (Google)": "browser",
+      "Hindi (Edge Female)": "hi-IN-SwaraNeural",
+      "Hindi (Edge Male)": "hi-IN-MadhurNeural",
+      "English (US)": "en-US-JennyNeural",
+      "English (UK)": "en-GB-SoniaNeural",
+      "English Male": "en-US-GuyNeural"
+    };
+
+    const detectedLang = detectLanguage(text);
+    const newVoiceName = getVoiceForLanguage(detectedLang, VOICE_MAP);
+
+    if (newVoiceName && newVoiceName !== settings.voiceURI) {
+      const voiceObj = voices.find(v => v.name === newVoiceName || Object.values(VOICE_MAP).includes(v.voiceURI) && v.voiceURI === VOICE_MAP[newVoiceName]);
+      if (voiceObj) {
+        updateSettings({ voiceURI: voiceObj.voiceURI });
+        console.log(`[Language Detection] Changed voice to: ${newVoiceName} (${detectedLang})`);
+      }
+    }
+  }, [text, voices, settings.voiceURI, updateSettings]);
 
   // Handle keyboard play request from useSpeech
   useEffect(() => {
@@ -226,11 +252,11 @@ export default function App() {
 
               <div className="flex items-center gap-2">
                 <FileUpload onTextLoaded={setText} />
-                <AudioDownloadButton 
-                  text={text} 
-                  settings={settings} 
-                  voices={voices} 
-                  disabled={!text.trim()} 
+                <AudioDownloadButton
+                  text={text}
+                  settings={settings}
+                  voices={voices}
+                  disabled={!text.trim()}
                 />
                 <DownloadButton text={text} disabled={!text.trim()} />
                 {text.trim() && (
