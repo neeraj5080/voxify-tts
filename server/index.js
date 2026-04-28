@@ -14,8 +14,7 @@ const allowedOrigins = [
   'http://localhost:3000',
   'http://localhost:5173',
   'https://voxify-backend-5ayx.onrender.com',
-  // Add your Vercel frontend URL here once you get it
-  // Example: 'https://voxify-frontend.vercel.app'
+  'https://voxify-tts.vercel.app'
 ];
 
 app.use(cors({
