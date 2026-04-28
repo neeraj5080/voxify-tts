@@ -2,6 +2,8 @@ import { useState, useRef } from 'react';
 import { Upload, FileText, X } from 'lucide-react';
 import axios from 'axios';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+
 export default function FileUpload({ onTextLoaded }) {
   const [dragging, setDragging] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -26,7 +28,7 @@ export default function FileUpload({ onTextLoaded }) {
         // Send to server for parsing
         const form = new FormData();
         form.append('file', file);
-        const res = await axios.post('http://localhost:3001/api/upload', form);
+        const res = await axios.post(`${API_URL}/api/upload`, form);
         onTextLoaded(res.data.text);
       } else {
         setError('Only PDF and TXT files are supported.');
@@ -51,20 +53,19 @@ export default function FileUpload({ onTextLoaded }) {
 
   return (
     <div>
-    <div
-  className={`group panel flex items-center gap-2 px-3 py-2.5 cursor-pointer transition-all ${
-    dragging ? 'drag-over' : ''
-  } border border-dashed border-gray-600 hover:border-blue-500 hover:bg-white/5 rounded-md`}
-  style={{ borderStyle: 'dashed' }}
-      onClick={() => inputRef.current?.click()}
-      onDrop={onDrop}
-      onDragOver={onDragOver}
-      onDragLeave={onDragLeave}
-      role="button"
-      tabIndex={0}
-      aria-label="Upload PDF or TXT file"
-      onKeyDown={e => e.key === 'Enter' && inputRef.current?.click()}
->
+      <div
+        className={`group panel flex items-center gap-2 px-3 py-2.5 cursor-pointer transition-all ${dragging ? 'drag-over' : ''
+          } border border-dashed border-gray-600 hover:border-blue-500 hover:bg-white/5 rounded-md`}
+        style={{ borderStyle: 'dashed' }}
+        onClick={() => inputRef.current?.click()}
+        onDrop={onDrop}
+        onDragOver={onDragOver}
+        onDragLeave={onDragLeave}
+        role="button"
+        tabIndex={0}
+        aria-label="Upload PDF or TXT file"
+        onKeyDown={e => e.key === 'Enter' && inputRef.current?.click()}
+      >
         <input
           ref={inputRef}
           type="file"
