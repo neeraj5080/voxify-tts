@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+
 // Split text into word/whitespace tokens
 function tokenize(text) {
   const tokens = [];
@@ -9,9 +11,9 @@ function tokenize(text) {
   while ((match = regex.exec(text)) !== null) {
     const raw = match[0];
     const isWord = /\S/u.test(raw);
-    tokens.push({ 
-      text: raw, 
-      isWord, 
+    tokens.push({
+      text: raw,
+      isWord,
       index: tokens.length,
       charStart: charPos,
       charEnd: charPos + raw.length
@@ -64,34 +66,34 @@ const VOICE_MAP = {
 };
 
 export function useSpeech() {
-  const [status, setStatus]               = useState('idle');
+  const [status, setStatus] = useState('idle');
   const [previewStatus, setPreviewStatus] = useState('idle');
-  const [tokens, setTokens]               = useState([]);
+  const [tokens, setTokens] = useState([]);
   const [activeWordIdx, setActiveWordIdx] = useState(-1);
-  const [progress, setProgress]           = useState(0);
-  const [voices, setVoices]               = useState([]);
-  const [settings, setSettings]           = useState({
+  const [progress, setProgress] = useState(0);
+  const [voices, setVoices] = useState([]);
+  const [settings, setSettings] = useState({
     voiceURI: '', rate: 1, pitch: 1, volume: 1, lang: '',
   });
 
-  const statusRef         = useRef('idle');
-  const chunksRef         = useRef([]);
-  const chunkIndexRef     = useRef(0);
-  const wordTokensRef     = useRef([]);
-  const allTokensRef      = useRef([]); 
-  const settingsRef       = useRef(settings);
-  settingsRef.current     = settings;
-  const lastBoundaryRef   = useRef(Date.now());
-  const activeWordIdxRef  = useRef(-1);
-  const textRef           = useRef('');
-  const watchdogRef       = useRef(null);
+  const statusRef = useRef('idle');
+  const chunksRef = useRef([]);
+  const chunkIndexRef = useRef(0);
+  const wordTokensRef = useRef([]);
+  const allTokensRef = useRef([]);
+  const settingsRef = useRef(settings);
+  settingsRef.current = settings;
+  const lastBoundaryRef = useRef(Date.now());
+  const activeWordIdxRef = useRef(-1);
+  const textRef = useRef('');
+  const watchdogRef = useRef(null);
   const currentCharIndexRef = useRef(0);
-  
-  const audioRef          = useRef(new Audio());
-  const audioUrlRef       = useRef(null);
-  const previewAudioRef   = useRef(new Audio());
-  const previewUrlRef     = useRef(null);
-  const wasPlayingRef     = useRef(false);
+
+  const audioRef = useRef(new Audio());
+  const audioUrlRef = useRef(null);
+  const previewAudioRef = useRef(new Audio());
+  const previewUrlRef = useRef(null);
+  const wasPlayingRef = useRef(false);
 
   const updateStatus = useCallback((s) => {
     statusRef.current = s;
@@ -157,7 +159,7 @@ export function useSpeech() {
 
   // ── Core Speech Logic ────────────────────────────────────────────────────
   const speakChunkRef = useRef(null);
-  
+
   const speakBrowserChunk = useCallback((chunk, chunkCharStart, chunkIdx, voice) => {
     const utter = new SpeechSynthesisUtterance(chunk);
     const s = settingsRef.current;
@@ -217,7 +219,7 @@ export function useSpeech() {
     const isEdge = Object.values(VOICE_MAP).includes(s.voiceURI) && s.voiceURI !== 'browser';
     if (isEdge) {
       try {
-        const response = await fetch('/api/tts', {
+        const response = await fetch(`${API_URL}/api/tts`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ text: chunkTextStr, voice: s.voiceURI })
@@ -315,8 +317,8 @@ export function useSpeech() {
     const allChunks = chunkTokensList(allTokensRef.current);
     let targetIdx = allChunks.findIndex(c => offset >= c.charStart && offset < c.charStart + c.length);
     if (targetIdx === -1) {
-       targetIdx = allChunks.findIndex(c => c.charStart >= offset);
-       if (targetIdx === -1) targetIdx = allChunks.length - 1;
+      targetIdx = allChunks.findIndex(c => c.charStart >= offset);
+      if (targetIdx === -1) targetIdx = allChunks.length - 1;
     }
     const targetChunk = allChunks[targetIdx];
     const charInChunk = offset - targetChunk.charStart;
@@ -344,14 +346,14 @@ export function useSpeech() {
     const s = settingsRef.current;
     const previewText = "Hello, this is a sample voice.";
     const isEdge = Object.values(VOICE_MAP).includes(s.voiceURI) && s.voiceURI !== 'browser';
-    
+
     if (statusRef.current === 'playing') {
       wasPlayingRef.current = true;
       pause();
     } else {
       wasPlayingRef.current = false;
     }
-    
+
     setPreviewStatus('loading');
     const cleanup = () => {
       setPreviewStatus('idle');
@@ -360,7 +362,7 @@ export function useSpeech() {
 
     if (isEdge) {
       try {
-        const response = await fetch('/api/tts', {
+        const response = await fetch(`${API_URL}/api/tts`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ text: previewText, voice: s.voiceURI })
